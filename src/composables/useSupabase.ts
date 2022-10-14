@@ -11,7 +11,6 @@ interface FromOptions<T> {
   manual?: boolean
   onSuccess?: (data: T[], count: number) => any
   onError?: (error: unknown) => any
-
 }
 
 interface From<T> {
@@ -35,12 +34,7 @@ export function useFrom<T>(query: PromiseLike<PostgrestResponse<T>> | ((...args:
     state.loading = true
     const _query = typeof query === 'function' ? query(...args) : query
     try {
-      const {
-        data,
-        error,
-        count,
-        status,
-      } = await _query
+      const { data, error, count, status } = await _query
 
       if (error && status !== 406)
         throw error
@@ -49,10 +43,11 @@ export function useFrom<T>(query: PromiseLike<PostgrestResponse<T>> | ((...args:
         onSuccess(data!, count!)
       return data
     }
-    catch (error) {
+    catch (error: any) {
       state.error = error
       if (onError)
         onError(error)
+
       throw error
     }
     finally {

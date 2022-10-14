@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { darkTheme } from 'naive-ui'
-
 const config = {
   abstract: true,
   preflightStyleDisabled: true,

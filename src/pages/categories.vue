@@ -3,24 +3,15 @@ import { ref } from 'vue'
 import { supabase, useFrom } from '@/composables/useSupabase'
 
 const form = ref<Record<string, unknown>>({})
-const message = useMessage()
 
-const { data: getData, run: getRun } = useFrom(supabase.from('product_category').select('*').order('id', { ascending: false }))
+const { data: getData, loading: getLoading, run: getRun } = useFrom(supabase.from('product_category').select('*').order('id', { ascending: false }))
 
 const { run: postRun } = useFrom(form => supabase.from('product_category').upsert(form), {
   manual: true,
-  onSuccess: () => {
-    getRun()
-    message.success('Product category saved')
-  },
 })
 
 const { run: deleteRun } = useFrom(id => supabase.from('product_category').delete().match({ id }), {
   manual: true,
-  onSuccess: () => {
-    getRun()
-    message.success('Product category deleted')
-  },
 })
 
 const columns = [
@@ -44,13 +35,13 @@ const rules = {
 
 <template>
   <div>
-    <crud-view v-model:form="form" :data="getData" :columns="columns" modal-title="category" :on-save="() => postRun(form)" :on-delete="(id) => deleteRun(id)" :rules="rules">
+    <crud-view v-model:form="form" v-bind="{ columns, data: getData, loading: getLoading, rules }" :on-delete="(id) => deleteRun(id)" :on-get="() => getRun()" :on-post="() => postRun(form)" title="Category">
       <template #form>
         <n-form-item label="Name" path="name" required>
-          <n-input v-model:value="form.name" label="Name" placeholder="" />
+          <n-input v-model:value="form.name" label="Name" placeholder="Enter category name" />
         </n-form-item>
         <n-form-item label="Description" path="description">
-          <n-input v-model:value="form.description" type="textarea" label="Name" placeholder="" />
+          <n-input v-model:value="form.description" label="Name" placeholder="Enter category description" type="textarea" />
         </n-form-item>
       </template>
     </crud-view>

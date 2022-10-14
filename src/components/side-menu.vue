@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
-import { NButton, NIcon } from 'naive-ui'
-import { RouterLink } from 'vue-router'
+import { NIcon } from 'naive-ui'
 import HomeOutline from '~icons/ion/home-outline'
 import PeopleOutline from '~icons/ion/people-outline'
-import BookmarkOutline from '~icons/ion/bookmark-outline'
+import PricetagsOutline from '~icons/ion/pricetags-outline'
 import CubeOutline from '~icons/ion/cube-outline'
 import LayersOutline from '~icons/ion/layers-outline'
 import ReceiptOutline from '~icons/ion/receipt-outline'
@@ -30,7 +29,7 @@ const options = [
   {
     label: 'Categories',
     key: 'categories',
-    icon: renderIcon(BookmarkOutline),
+    icon: renderIcon(PricetagsOutline),
   },
   {
     label: 'Products',
@@ -65,5 +64,5 @@ const onClick = (key: string) => {
 </script>
 
 <template>
-  <n-menu v-model:value="selectedKey" :default-value="route.name" :collapsed-width="64" :collapsed-icon-size="22" :options="options" @update:value="onClick" />
+  <n-menu v-model:value="selectedKey" :collapsed-icon-size="22" :collapsed-width="64" :default-value="route.name" :options="options" @update:value="onClick" />
 </template>

@@ -3,8 +3,6 @@ import { NButton, NForm, NPopconfirm, NSpace } from 'naive-ui'
 import { h, ref } from 'vue'
 import type { DataTableColumns, FormRules } from 'naive-ui'
 
-import { useFuse } from '@vueuse/integrations/useFuse'
-
 type Row = Record<string, unknown>
 
 const props = defineProps<{

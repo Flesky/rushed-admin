@@ -6,9 +6,9 @@ const message = useMessage()
 const { isOnline } = useNetwork()
 watch(isOnline, (online) => {
   if (online)
-    message.success('Reconnected.')
+    message.success('Reconnected')
   else
-    message.error('Disconnected.')
+    message.error('Disconnected')
 })
 </script>
 

@@ -1,20 +1,21 @@
 <script setup lang="ts">
+import type { DataTableColumns } from 'naive-ui'
 import { ref } from 'vue'
 import { supabase, useFrom } from '@/composables/useSupabase'
 
 const form = ref<Record<string, unknown>>({})
 
-const { data: getData, loading: getLoading, run: getRun } = useFrom(supabase.from('product_category').select('*').order('id', { ascending: false }))
+const { data, loading, run: refresh } = useFrom(supabase.from('product_category').select('*').order('id', { ascending: false }))
 
-const { run: postRun } = useFrom(form => supabase.from('product_category').upsert(form), {
+const { run: save } = useFrom(form => supabase.from('product_category').upsert(form), {
   manual: true,
 })
 
-const { run: deleteRun } = useFrom(id => supabase.from('product_category').delete().match({ id }), {
+const { run: remove } = useFrom(id => supabase.from('product_category').delete().match({ id }), {
   manual: true,
 })
 
-const columns = [
+const columns: DataTableColumns = [
   {
     title: 'Name',
     key: 'name',
@@ -22,20 +23,21 @@ const columns = [
   {
     title: 'Description',
     key: 'description',
-  }]
+  },
+]
 
 const rules = {
   name: {
     required: true,
     message: 'Name is required',
-    trigger: ['input', 'blur'],
+    // trigger: ['input', 'blur'],
   },
 }
 </script>
 
 <template>
   <div>
-    <crud-view v-model:form="form" v-bind="{ columns, data: getData, loading: getLoading, rules }" :on-delete="(id) => deleteRun(id)" :on-get="() => getRun()" :on-post="() => postRun(form)" title="Category">
+    <crud-view v-model:form="form" v-bind="{ columns, data, loading, rules }" :on-delete="(id) => remove(id)" :on-refresh="() => refresh()" :on-save="() => save(form)" title="Category">
       <template #form>
         <n-form-item label="Name" path="name" required>
           <n-input v-model:value="form.name" label="Name" placeholder="Enter category name" />
@@ -47,3 +49,8 @@ const rules = {
     </crud-view>
   </div>
 </template>
+
+<route lang="yaml">
+meta:
+  requiresAuth: true
+</route>

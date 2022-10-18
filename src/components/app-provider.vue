@@ -2,7 +2,6 @@
 const config = {
   abstract: true,
   preflightStyleDisabled: true,
-  // theme: darkTheme,
 }
 </script>
 

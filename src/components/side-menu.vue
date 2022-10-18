@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import { NIcon } from 'naive-ui'
+import { supabase } from '@/composables/useSupabase'
 import HomeOutline from '~icons/ion/home-outline'
 import PeopleOutline from '~icons/ion/people-outline'
 import PricetagsOutline from '~icons/ion/pricetags-outline'
@@ -8,6 +9,7 @@ import CubeOutline from '~icons/ion/cube-outline'
 import LayersOutline from '~icons/ion/layers-outline'
 import ReceiptOutline from '~icons/ion/receipt-outline'
 import InformationCircleOutline from '~icons/ion/information-circle-outline'
+import LogOutOutline from '~icons/ion/log-out-outline'
 
 const emit = defineEmits(['closeMenu'])
 
@@ -51,15 +53,31 @@ const options = [
     key: 'about',
     icon: renderIcon(InformationCircleOutline),
   },
+  {
+    key: 'divider',
+    type: 'divider',
+  },
+  {
+    label: 'Log out',
+    key: 'logout',
+    icon: renderIcon(LogOutOutline),
+  },
 ]
 
 const route = useRoute()
 const router = useRouter()
 const selectedKey = ref(route.name)
+const message = useMessage()
 
 const onClick = (key: string) => {
   emit('closeMenu')
-  router.push(`/${key}`)
+  if (key === 'logout') {
+    supabase.auth.signOut().then(() => {
+      message.success('You have been logged out')
+      router.push('/login')
+    })
+  }
+  else { router.push({ name: key }) }
 }
 </script>
 

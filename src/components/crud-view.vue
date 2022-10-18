@@ -12,32 +12,31 @@ const props = defineProps<{
   form?: Row
   rules?: FormRules
   title?: string
-  onGet: () => Promise<unknown>
-  onPost?: () => Promise<unknown>
+  onRefresh: () => Promise<unknown>
+  onSave?: () => Promise<unknown>
   onDelete?: (id: number) => Promise<unknown>
 }>()
-const emit = defineEmits(['update:form'])
+const emit = defineEmits(['update:form', 'reset'])
 
 const message = useMessage()
 
 const formRef = ref<InstanceType<typeof NForm>>()
-const mode = ref<string>()
 const modal = ref<boolean>(false)
 const showModal = (record?: Record<string, unknown>) => {
-  mode.value = !record ? 'Add' : 'Edit'
   emit('update:form', { ...record })
+  emit('reset')
   modal.value = true
 }
 
 const columns: DataTableColumns = props.columns
-if (props.onPost || props.onDelete) {
+if (props.onSave || props.onDelete) {
   columns.push({
     title: 'Actions',
     key: 'actions',
     render(row) {
       return h(
         NSpace,
-        () => [props.onPost
+        () => [props.onSave
           ? h(NButton, {
             type: 'primary',
             secondary: true,
@@ -62,31 +61,32 @@ const filteredData = computed(() => {
 },
 )
 
-const postLoading = ref<boolean>(false)
-function handlePost() {
-  postLoading.value = true
+const saveLoading = ref<boolean>(false)
+function handleSave() {
+  saveLoading.value = true
   formRef.value!.validate().then(() => {
-    props.onPost!().then(() => {
+    props.onSave!().then(() => {
       modal.value = false
-      postLoading.value = false
+      saveLoading.value = false
       message.success(`${props.title} saved`)
-      props.onGet()
+      props.onRefresh()
     }).catch((error) => {
       if (error.message === 'FetchError: Failed to fetch')
-        message.error('Network error.')
+        return message.error('Network error')
+      console.error(error)
     })
   }).catch(() => message.warning('Please check the form for errors')).finally(() => {
-    postLoading.value = false
+    saveLoading.value = false
   })
 }
 
 function handleDelete(id: number) {
   props.onDelete!(id).then(() => {
     message.success(`${props.title} deleted`)
-    props.onGet()
+    props.onRefresh()
   }).catch((error) => {
     if (error.message === 'FetchError: Failed to fetch')
-      message.error('Network error.')
+      message.error('Network error')
   })
 }
 </script>
@@ -101,13 +101,13 @@ function handleDelete(id: number) {
           </template>
         </n-input>
         <NSpace justify="end" size="small">
-          <NButton @click="onGet">
+          <NButton @click="onRefresh">
             <template #icon>
               <ion-refresh />
             </template>
             Refresh
           </NButton>
-          <NButton v-if="onPost" type="primary" @click="showModal()">
+          <NButton v-if="onSave" type="primary" @click="showModal()">
             <template #icon>
               <ion-plus />
             </template>
@@ -121,11 +121,12 @@ function handleDelete(id: number) {
     <n-modal
       v-model:show="modal"
       class="max-w-lg"
-      :header-style="{ 'text-align': 'center', 'text-transform': 'lowercase' }"
+      :header-style="{ 'text-align': 'center' }"
+      :mask-closable="false"
       preset="card"
       segmented
       size="small"
-      :title="`${mode} ${title}`"
+      :title="title"
     >
       <NForm
         ref="formRef"
@@ -138,7 +139,7 @@ function handleDelete(id: number) {
           <NButton @click="modal = false">
             Cancel
           </NButton>
-          <NButton :loading="postLoading" type="primary" @click="handlePost">
+          <NButton :loading="saveLoading" type="primary" @click="handleSave">
             Save
           </NButton>
         </NSpace>

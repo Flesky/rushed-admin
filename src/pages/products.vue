@@ -12,7 +12,7 @@ function getFileExtension(fileName: string): string {
   return fileName.split('.').slice(-1).pop()!
 }
 
-const { data, loading, run: refresh } = useFrom(supabase.from('product').select('*').order('id', { ascending: false }))
+const { data, loading, run: refresh } = useFrom(supabase.from('product').select('*, product_category ( name )').order('id', { ascending: false }))
 
 const categoryOptions = ref<Array<{ label: string; value: string }>>([])
 const { run: categoryRun } = useFrom(supabase.from('product_category').select('id, name').order('name', { ascending: false }), {
@@ -20,7 +20,7 @@ const { run: categoryRun } = useFrom(supabase.from('product_category').select('i
 })
 onActivated(() => { categoryRun() })
 
-const { run: save } = useFrom(form => supabase.from('product').upsert(form), {
+const { run: save } = useFrom(form => supabase.from('product').upsert({ ...form, product_category: undefined }), {
   manual: true,
 })
 const { run: removeFile } = useStorage(fileName =>
@@ -28,14 +28,11 @@ const { run: removeFile } = useStorage(fileName =>
 {
   manual: true,
 })
-async function handleRemoveFile(form: Record<string, unknown>) {
+async function handleRemoveFile(_form: Record<string, unknown>) {
+  form.value = { ..._form, image: null }
   return Promise.all(
     [
-      removeFile(form.image),
-      save({
-        ...form,
-        image: null,
-      }),
+      removeFile(_form.image),
     ],
   ).then(() => {
     message.success('Image removed')
@@ -52,7 +49,7 @@ async function handleSave(form: Record<string, unknown>) {
   if (file) {
     const uuid = crypto.randomUUID()
     const fileName = `${uuid}.${getFileExtension(file.name)}`
-    removeFile(form.image).catch(e => console.error(e))
+    removeFile(form.image)
     return Promise.all(
       [
         uploadFile(fileName, file),
@@ -76,8 +73,9 @@ const columns: DataTableColumns = [
   {
     title: 'Image',
     render(row: { image: string }) {
-      return h(SupabaseImage, { from: 'product', path: row.image, width: 50 })
+      return h(SupabaseImage, { from: 'product', path: row.image, width: 50, key: row.image })
     },
+    key: 'image',
     width: 74,
   },
   {
@@ -94,6 +92,10 @@ const columns: DataTableColumns = [
     render(row: { price: any }) {
       return `₱${row.price}`
     },
+  },
+  {
+    title: 'Category',
+    key: 'product_category.name',
   },
 ]
 

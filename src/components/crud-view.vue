@@ -73,7 +73,9 @@ function handleSave() {
     }).catch((error) => {
       if (error.message === 'FetchError: Failed to fetch')
         return message.error('Network error')
-      console.error(error)
+      if (error.details)
+        return message.error(error.details)
+      else return message.error(error.message)
     })
   }).catch(() => message.warning('Please check the form for errors')).finally(() => {
     saveLoading.value = false
@@ -86,7 +88,8 @@ function handleDelete(id: number) {
     props.onRefresh()
   }).catch((error) => {
     if (error.message === 'FetchError: Failed to fetch')
-      message.error('Network error')
+      return message.error('Network error')
+    else return message.error('Failed to delete')
   })
 }
 </script>

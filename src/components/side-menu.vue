@@ -77,7 +77,7 @@ const onClick = (key: string) => {
       router.push('/login')
     })
   }
-  else { router.push({ name: key }) }
+  else { router.push({ path: `/${key}` }) }
 }
 </script>
 

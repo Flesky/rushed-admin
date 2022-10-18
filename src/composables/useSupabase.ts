@@ -12,12 +12,14 @@ export const supabase = createClient(
 
 interface FromOptions<T> {
   manual?: boolean
+  onBefore?: (...args: any[]) => any
   onSuccess?: (data: T[], count?: number) => any
   onError?: (error: unknown) => any
 }
 
 interface StorageOptions {
   manual?: boolean
+  onBefore?: (...args: any[]) => any
   onSuccess?: (data: { path: string } | Blob | FileObject[]) => any
   onError?: (error: unknown) => any
 }
@@ -68,11 +70,14 @@ export function useFrom<T>(query: PromiseLike<PostgrestResponse<T>> | ((...args:
       loading: false,
     })
 
-  const { manual, onSuccess, onError } = options ?? {}
+  const { manual, onBefore, onSuccess, onError } = options ?? {}
 
   async function run(...args: any[]) {
     state.loading = true
     const _query = typeof query === 'function' ? query(...args) : query
+    if (onBefore)
+      onBefore()
+
     try {
       const { data, error, count, status } = await _query
 
@@ -114,11 +119,14 @@ export function useStorage(query: StorageType | ((...args: any[]) => StorageType
     loading: false,
   })
 
-  const { manual, onSuccess, onError } = options ?? {}
+  const { manual, onBefore, onSuccess, onError } = options ?? {}
 
   async function run(...args: any[]) {
     state.loading = true
     const _query = typeof query === 'function' ? query(...args) : query
+    if (onBefore)
+      onBefore()
+
     try {
       const { data, error } = await _query
 
